@@ -31,7 +31,6 @@ export async function transcribeAudio(
 	formData.append('model', settings.sttModel);
 
 	try {
-		// eslint-disable-next-line no-restricted-globals -- Required for multipart/form-data (requestUrl doesn't support FormData)
 		const response = await fetch(settings.sttApiUrl, {
 			method: 'POST',
 			headers: {

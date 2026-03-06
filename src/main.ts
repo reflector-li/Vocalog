@@ -266,18 +266,18 @@ export default class VocalogPlugin extends Plugin {
 		const files: TFile[] = [];
 
 		// 尝试从文件浏览器获取选中的文件
+		// 访问 Obsidian 内部 API 获取文件浏览器选中的文件
 		const fileExplorers = this.app.workspace.getLeavesOfType('file-explorer');
 		if (fileExplorers.length > 0) {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Accessing internal Obsidian API for file explorer selection
-			const fileExplorer: any = fileExplorers[0].view;
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- Accessing internal Obsidian API tree property
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment -- Internal Obsidian API for file explorer selection
+			const fileExplorer = fileExplorers[0].view as any;
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- Internal Obsidian API tree property
 			if (fileExplorer?.tree) {
-				// 获取所有选中的文件
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- Accessing internal Obsidian API selectedDoms property
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment -- Internal Obsidian API selectedDoms property
 				const selectedItems = fileExplorer.tree.selectedDoms;
 				if (selectedItems) {
 					for (const item of selectedItems) {
-						// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- Accessing internal Obsidian API file property
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- Internal Obsidian API file property
 						const file = item.file as TFile | undefined;
 						if (file && this.isAudioFile(file)) {
 							files.push(file);
