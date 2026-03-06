@@ -1,0 +1,10 @@
+{
+  "id": "vocalog",
+  "name": "Vocalog",
+  "version": "1.0.0",
+  "minAppVersion": "0.15.0",
+  "description": "Automatically transcribe audio recordings and generate structured daily notes with AI summaries",
+  "author": "LinkX",
+  "authorUrl": "https://github.com/reflector-li",
+  "isDesktopOnly": false
+}

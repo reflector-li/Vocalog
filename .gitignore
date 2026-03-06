@@ -1,0 +1,19 @@
+# Node
+node_modules/
+package-lock.json
+
+# Build sourcemaps (but keep main.js for users)
+*.js.map
+
+# IDE
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Testing
+test-vault/
+
+# Misc
+*.log
