@@ -27,7 +27,7 @@ __export(main_exports, {
   default: () => VocalogPlugin
 });
 module.exports = __toCommonJS(main_exports);
-var import_obsidian6 = require("obsidian");
+var import_obsidian7 = require("obsidian");
 
 // src/settings.ts
 var import_obsidian = require("obsidian");
@@ -42,20 +42,39 @@ var DEFAULT_SETTINGS = {
   llmApiUrl: "https://api.deepseek.com/v1/chat/completions",
   llmApiKey: "",
   llmModel: "deepseek-chat",
-  systemPrompt: `You are an AI assistant helping to organize voice memos into structured daily notes. Your task is to:
+  systemPrompt: `\u4F60\u662F\u4E00\u4E2A\u6781\u7B80\u4E3B\u4E49\u7684\u903B\u8F91\u5206\u6790\u5E08\u3002
+\u4F60\u7684\u4EFB\u52A1\u662F\u5C06\u7528\u6237\u7684\u8BED\u97F3\u8F6C\u5F55\u6587\u672C\u8F6C\u5316\u4E3A**\u9AD8\u5BC6\u5EA6\u3001\u65E0\u5E9F\u8BDD**\u7684 Markdown \u65E5\u5FD7\u3002
 
-1. Analyze all transcribed voice recordings from today
-2. Extract key information, events, tasks, and ideas
-3. Organize them into a clear, structured summary
+### \u6838\u5FC3\u539F\u5219
+1. **\u53BB\u566A**\uFF1A\u5254\u9664\u6240\u6709\u91CD\u590D\u5185\u5BB9\u548C\u65E0\u610F\u4E49\u7684\u611F\u53F9\u3002
+2. **\u52A8\u6001\u6E32\u67D3**\uFF1A**\u4EC5\u5F53**\u7C7B\u522B\u4E0B\u6709\u5B9E\u8D28\u5185\u5BB9\u65F6\u624D\u663E\u793A\u8BE5\u6807\u9898\u3002\u5982\u679C\u67D0\u4E2A\u7C7B\u522B\u4E3A\u7A7A\uFF0C**\u7EDD\u5BF9\u4E0D\u8981**\u663E\u793A\u8BE5\u6807\u9898\u6216"\u65E0"\u5B57\u6837\u3002
+3. **\u91D1\u53E5**\uFF1A\u90A3\u4E9B\u7B80\u5355\u53E3\u8BED\u5316\u7684\uFF0C\u4F46\u53C8\u6DF1\u5165\u4EBA\u5FC3\u7684\u91D1\u53E5\u5F80\u5F80\u662F\u6700\u80FD\u9610\u8FF0\u89C2\u70B9\u7684\uFF0C\u5982\u679C\u6709\u8FD9\u6837\u7684\u53E5\u5B50\uFF0C\u8BF7\u4FDD\u7559\u8BB0\u5F55\u3002
 
-Output format:
-- Use bullet points for better readability
-- Group related items together
-- Highlight important tasks with checkboxes [ ]
-- Keep the original timestamps for reference
-- Preserve the chronological order when relevant
+### \u5904\u7406\u903B\u8F91
+\u8BF7\u6309\u4EE5\u4E0B\u903B\u8F91\u5904\u7406\u6587\u672C\uFF0C\u5E76\u4EC5\u8F93\u51FA\u6709\u5185\u5BB9\u7684\u6A21\u5757\uFF1A
 
-Be concise but comprehensive. Focus on actionable items and important information.`
+**\u6A21\u5757 1\uFF1A\u{1F4C5}\u4ECA\u65E5\u6240\u505A**
+*\u5224\u65AD\u6807\u51C6\uFF1A\u662F\u5426\u53EF\u4EE5\u660E\u786E\u770B\u51FA\u4ECA\u65E5\u6240\u505A\u9879\u76EE\uFF0C\u4F8B\u5982\u8BFB\u4E86\u90A3\u672C\u4E66\u7684\u4EC0\u4E48\u6545\u4E8B\uFF0C\u542C\u4E86\u4EC0\u4E48\u5185\u5BB9\u7684\u64AD\u5BA2\u3002*
+*\u683C\u5F0F\uFF1A*
+- [x ] [\u52A8\u8BCD] [\u5BF9\u8C61]
+
+**\u6A21\u5757 2\uFF1A\u{1F4A1} \u6D1E\u5BDF\u4E0E\u7075\u611F (Insights)**
+*\u5224\u65AD\u6807\u51C6\uFF1A\u662F\u5426\u5B58\u5728\u72EC\u7279\u7684\u89C2\u70B9\u3001\u53CD\u601D\u3001\u51B3\u7B56\u6216\u7075\u611F\uFF1F*
+*\u683C\u5F0F\uFF1A*
+- **\u5173\u952E\u8BCD**\uFF1A\u4E00\u53E5\u8BDD\u6838\u5FC3\u89C2\u70B9\uFF0C\u5173\u952E\u8BCD\u662F\u603B\u7ED3\u51DD\u7EC3\u7684\u7ED3\u679C\u3002
+
+**\u6A21\u5757 3\uFF1A\u2705 \u5F85\u529E\u4E8B\u9879 (Actions)**
+*\u5224\u65AD\u6807\u51C6\uFF1A\u662F\u5426\u5B58\u5728\u660E\u786E\u7684\u4EFB\u52A1\u3001\u4E0B\u4E00\u6B65\u884C\u52A8\u6216\u9700\u8981\u8DDF\u8FDB\u7684\u4E8B\u9879\uFF1F*
+*\u683C\u5F0F\uFF1A*
+- [ ] [\u52A8\u8BCD] [\u5BF9\u8C61]
+
+### \u793A\u4F8B
+\u8F93\u5165\uFF1A"\u8BB0\u5F97\u4E70\u725B\u5976\u3002"
+\u8F93\u51FA\uFF1A
+## \u2705 \u5F85\u529E\u4E8B\u9879
+- [ ] \u8D2D\u4E70\u725B\u5976
+
+(\u6CE8\u610F\uFF1A\u4E0D\u8981\u8F93\u51FA\u7A7A\u7684"\u4ECA\u65E5\u6240\u505A"\uFF0C"\u6D1E\u5BDF"\u548C"\u8BB0\u5F55"\u6A21\u5757)`
 };
 var VocalogSettingTab = class extends import_obsidian.PluginSettingTab {
   constructor(app, plugin) {
@@ -65,53 +84,53 @@ var VocalogSettingTab = class extends import_obsidian.PluginSettingTab {
   display() {
     const { containerEl } = this;
     containerEl.empty();
-    containerEl.createEl("h2", { text: "Vocalog Settings" });
-    containerEl.createEl("h3", { text: "Basic Settings" });
-    new import_obsidian.Setting(containerEl).setName("Audio folder").setDesc("Folder path where audio recordings are stored").addText((text) => text.setPlaceholder("Inbox/Voice").setValue(this.plugin.settings.audioFolder).onChange(async (value) => {
+    new import_obsidian.Setting(containerEl).setHeading().setName("Vocalog settings");
+    new import_obsidian.Setting(containerEl).setHeading().setName("Basic settings");
+    new import_obsidian.Setting(containerEl).setName("Audio folder").setDesc("Folder path where audio recordings are stored").addText((text) => text.setPlaceholder("Path").setValue(this.plugin.settings.audioFolder).onChange(async (value) => {
       this.plugin.settings.audioFolder = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian.Setting(containerEl).setName("Output folder").setDesc("Folder where daily notes will be saved (leave empty for vault root)").addText((text) => text.setPlaceholder("Daily Notes").setValue(this.plugin.settings.outputFolder).onChange(async (value) => {
+    new import_obsidian.Setting(containerEl).setName("Output folder").setDesc("Folder where daily notes will be saved (leave empty for vault root)").addText((text) => text.setPlaceholder("Folder").setValue(this.plugin.settings.outputFolder).onChange(async (value) => {
       this.plugin.settings.outputFolder = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian.Setting(containerEl).setName("Daily note format").setDesc("Date format for daily notes (using moment.js format)").addText((text) => text.setPlaceholder("YYYY-MM-DD").setValue(this.plugin.settings.dailyNoteFormat).onChange(async (value) => {
+    new import_obsidian.Setting(containerEl).setName("Daily note format").setDesc("Date format for daily notes (using moment.js format)").addText((text) => text.setPlaceholder("Format").setValue(this.plugin.settings.dailyNoteFormat).onChange(async (value) => {
       this.plugin.settings.dailyNoteFormat = value;
       await this.plugin.saveSettings();
     }));
-    containerEl.createEl("h3", { text: "Speech-to-Text (STT) Settings" });
-    new import_obsidian.Setting(containerEl).setName("STT API URL").setDesc("API endpoint for speech-to-text service (OpenAI Whisper compatible)").addText((text) => text.setPlaceholder("https://api.openai.com/v1/audio/transcriptions").setValue(this.plugin.settings.sttApiUrl).onChange(async (value) => {
+    new import_obsidian.Setting(containerEl).setHeading().setName("Speech-to-text settings");
+    new import_obsidian.Setting(containerEl).setName("Speech-to-text API URL").setDesc("API endpoint for speech-to-text service").addText((text) => text.setPlaceholder("https://api.openai.com/v1/audio/transcriptions").setValue(this.plugin.settings.sttApiUrl).onChange(async (value) => {
       this.plugin.settings.sttApiUrl = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian.Setting(containerEl).setName("STT API Key").setDesc("API key for authentication").addText((text) => {
+    new import_obsidian.Setting(containerEl).setName("Speech-to-text API key").setDesc("API key for authentication").addText((text) => {
       text.setPlaceholder("Enter your API key").setValue(this.plugin.settings.sttApiKey).onChange(async (value) => {
         this.plugin.settings.sttApiKey = value;
         await this.plugin.saveSettings();
       });
       text.inputEl.type = "password";
     });
-    new import_obsidian.Setting(containerEl).setName("STT Model").setDesc("Model to use for transcription").addText((text) => text.setPlaceholder("whisper-1").setValue(this.plugin.settings.sttModel).onChange(async (value) => {
+    new import_obsidian.Setting(containerEl).setName("Speech-to-text model").setDesc("Model to use for transcription").addText((text) => text.setPlaceholder("Model").setValue(this.plugin.settings.sttModel).onChange(async (value) => {
       this.plugin.settings.sttModel = value;
       await this.plugin.saveSettings();
     }));
-    containerEl.createEl("h3", { text: "LLM Summarization Settings" });
-    new import_obsidian.Setting(containerEl).setName("LLM API URL").setDesc("API endpoint for LLM service (OpenAI Chat compatible)").addText((text) => text.setPlaceholder("https://api.deepseek.com/v1/chat/completions").setValue(this.plugin.settings.llmApiUrl).onChange(async (value) => {
+    new import_obsidian.Setting(containerEl).setHeading().setName("AI summarization settings");
+    new import_obsidian.Setting(containerEl).setName("AI API URL").setDesc("API endpoint for AI service").addText((text) => text.setPlaceholder("https://api.deepseek.com/v1/chat/completions").setValue(this.plugin.settings.llmApiUrl).onChange(async (value) => {
       this.plugin.settings.llmApiUrl = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian.Setting(containerEl).setName("LLM API Key").setDesc("API key for authentication").addText((text) => {
+    new import_obsidian.Setting(containerEl).setName("AI API key").setDesc("API key for authentication").addText((text) => {
       text.setPlaceholder("Enter your API key").setValue(this.plugin.settings.llmApiKey).onChange(async (value) => {
         this.plugin.settings.llmApiKey = value;
         await this.plugin.saveSettings();
       });
       text.inputEl.type = "password";
     });
-    new import_obsidian.Setting(containerEl).setName("LLM Model").setDesc("Model to use for summarization").addText((text) => text.setPlaceholder("deepseek-chat").setValue(this.plugin.settings.llmModel).onChange(async (value) => {
+    new import_obsidian.Setting(containerEl).setName("AI model").setDesc("Model to use for summarization").addText((text) => text.setPlaceholder("Model").setValue(this.plugin.settings.llmModel).onChange(async (value) => {
       this.plugin.settings.llmModel = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian.Setting(containerEl).setName("System Prompt").setDesc("Prompt to guide the AI in generating summaries").addTextArea((text) => {
+    new import_obsidian.Setting(containerEl).setName("System prompt").setDesc("Prompt to guide the AI in generating summaries").addTextArea((text) => {
       text.setPlaceholder("Enter system prompt").setValue(this.plugin.settings.systemPrompt).onChange(async (value) => {
         this.plugin.settings.systemPrompt = value;
         await this.plugin.saveSettings();
@@ -172,12 +191,13 @@ async function transcribeAudio(audioData, fileName, settings) {
     const result = await response.json();
     return result.text;
   } catch (error) {
-    if (error.message.includes("Failed to fetch")) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    if (errorMessage.includes("Failed to fetch") || errorMessage.includes("network")) {
       throw new Error(`\u7F51\u7EDC\u9519\u8BEF\uFF1A\u65E0\u6CD5\u8FDE\u63A5\u5230 STT API\u3002\u8BF7\u68C0\u67E5\uFF1A
 1. API URL \u662F\u5426\u6B63\u786E
 2. \u7F51\u7EDC\u8FDE\u63A5\u662F\u5426\u6B63\u5E38
 3. \u662F\u5426\u9700\u8981\u4EE3\u7406
-\u539F\u59CB\u9519\u8BEF: ${error.message}`);
+\u539F\u59CB\u9519\u8BEF: ${errorMessage}`);
     }
     throw error;
   }
@@ -208,7 +228,9 @@ async function transcribeBatch(files, vault, settings, noticeCallback) {
 }
 
 // src/summarization.ts
+var import_obsidian4 = require("obsidian");
 async function summarizeTranscripts(transcripts, settings) {
+  var _a, _b, _c;
   const context = transcripts.map((t) => `[${t.time}] ${t.text}`).join("\n\n");
   const requestBody = {
     model: settings.llmModel,
@@ -219,7 +241,8 @@ async function summarizeTranscripts(transcripts, settings) {
     temperature: 0.7
   };
   try {
-    const response = await fetch(settings.llmApiUrl, {
+    const response = await (0, import_obsidian4.requestUrl)({
+      url: settings.llmApiUrl,
       method: "POST",
       headers: {
         "Authorization": `Bearer ${settings.llmApiKey}`,
@@ -227,28 +250,25 @@ async function summarizeTranscripts(transcripts, settings) {
       },
       body: JSON.stringify(requestBody)
     });
-    if (!response.ok) {
-      const errorText = await response.text().catch(() => "Unknown error");
-      throw new Error(`LLM API failed: ${response.statusText} - ${errorText}`);
-    }
-    const result = await response.json();
-    return result.choices[0].message.content;
+    const result = response.json;
+    return (_c = (_b = (_a = result.choices[0]) == null ? void 0 : _a.message) == null ? void 0 : _b.content) != null ? _c : "";
   } catch (error) {
-    if (error.message.includes("Failed to fetch")) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    if (errorMessage.includes("Failed to fetch") || errorMessage.includes("network")) {
       throw new Error(`\u7F51\u7EDC\u9519\u8BEF\uFF1A\u65E0\u6CD5\u8FDE\u63A5\u5230 LLM API\u3002\u8BF7\u68C0\u67E5\uFF1A
 1. API URL \u662F\u5426\u6B63\u786E
 2. API Key \u662F\u5426\u6709\u6548
 3. \u7F51\u7EDC\u8FDE\u63A5\u662F\u5426\u6B63\u5E38
-\u539F\u59CB\u9519\u8BEF: ${error.message}`);
+\u539F\u59CB\u9519\u8BEF: ${errorMessage}`);
     }
     throw error;
   }
 }
 
 // src/journalWriter.ts
-var import_obsidian4 = require("obsidian");
+var import_obsidian5 = require("obsidian");
 async function writeToJournal(content, settings, vault, targetDate) {
-  const dateToUse = targetDate || (0, import_obsidian4.moment)();
+  const dateToUse = targetDate || (0, import_obsidian5.moment)();
   const fileName = dateToUse.format(settings.dailyNoteFormat) + ".md";
   const filePath = settings.outputFolder ? `${settings.outputFolder}/${fileName}` : fileName;
   if (settings.outputFolder) {
@@ -263,7 +283,7 @@ async function writeToJournal(content, settings, vault, targetDate) {
   if (!dailyNote) {
     dailyNote = await vault.create(filePath, "");
   }
-  if (!(dailyNote instanceof import_obsidian4.TFile)) {
+  if (!(dailyNote instanceof import_obsidian5.TFile)) {
     throw new Error("Daily note is not a file");
   }
   let existingContent = await vault.read(dailyNote);
@@ -272,14 +292,14 @@ async function writeToJournal(content, settings, vault, targetDate) {
 }
 
 // src/calendarModal.ts
-var import_obsidian5 = require("obsidian");
-var CalendarModal = class extends import_obsidian5.Modal {
+var import_obsidian6 = require("obsidian");
+var CalendarModal = class extends import_obsidian6.Modal {
   constructor(app, onSubmit) {
     super(app);
     this.onSubmit = onSubmit;
     this.selectedDates = /* @__PURE__ */ new Set();
-    import_obsidian5.moment.locale("zh-cn");
-    this.currentMonth = (0, import_obsidian5.moment)().startOf("month");
+    import_obsidian6.moment.locale("zh-cn");
+    this.currentMonth = (0, import_obsidian6.moment)().startOf("month");
   }
   onOpen() {
     const { contentEl } = this;
@@ -299,9 +319,9 @@ var CalendarModal = class extends import_obsidian5.Modal {
         this.updateGenerateButton();
       };
     };
-    addButton("\u4ECA\u5929", [(0, import_obsidian5.moment)().format("YYYY-MM-DD")]);
-    addButton("\u6628\u5929", [(0, import_obsidian5.moment)().subtract(1, "day").format("YYYY-MM-DD")]);
-    addButton("\u672C\u5468", this.getWeekDates((0, import_obsidian5.moment)()));
+    addButton("\u4ECA\u5929", [(0, import_obsidian6.moment)().format("YYYY-MM-DD")]);
+    addButton("\u6628\u5929", [(0, import_obsidian6.moment)().subtract(1, "day").format("YYYY-MM-DD")]);
+    addButton("\u672C\u5468", this.getWeekDates((0, import_obsidian6.moment)()));
     addButton("\u6700\u8FD17\u5929", this.getLast7Days());
     const clearBtn = quickButtons.createEl("button", { text: "\u6E05\u7A7A", cls: "mod-warning" });
     clearBtn.onclick = () => {
@@ -363,7 +383,7 @@ var CalendarModal = class extends import_obsidian5.Modal {
     const startDate = startOfMonth.clone().subtract(firstDayOfWeek, "days");
     const lastDayOfWeek = endOfMonth.day();
     const endDate = endOfMonth.clone().add(6 - lastDayOfWeek, "days");
-    const today = (0, import_obsidian5.moment)().format("YYYY-MM-DD");
+    const today = (0, import_obsidian6.moment)().format("YYYY-MM-DD");
     let currentDate = startDate.clone();
     while (currentDate.isSameOrBefore(endDate, "day")) {
       const dateStr = currentDate.format("YYYY-MM-DD");
@@ -377,7 +397,7 @@ var CalendarModal = class extends import_obsidian5.Modal {
       if (this.selectedDates.has(dateStr)) {
         dayEl.addClass("selected");
       }
-      if (currentDate.isAfter((0, import_obsidian5.moment)(), "day")) {
+      if (currentDate.isAfter((0, import_obsidian6.moment)(), "day")) {
         dayEl.addClass("future");
       }
       dayEl.createEl("span", { text: currentDate.format("D") });
@@ -411,7 +431,7 @@ var CalendarModal = class extends import_obsidian5.Modal {
   getLast7Days() {
     const dates = [];
     for (let i = 0; i < 7; i++) {
-      dates.push((0, import_obsidian5.moment)().subtract(i, "days").format("YYYY-MM-DD"));
+      dates.push((0, import_obsidian6.moment)().subtract(i, "days").format("YYYY-MM-DD"));
     }
     return dates;
   }
@@ -420,32 +440,32 @@ var CalendarModal = class extends import_obsidian5.Modal {
     contentEl.empty();
   }
   submit() {
-    const dates = Array.from(this.selectedDates).map((d) => (0, import_obsidian5.moment)(d, "YYYY-MM-DD")).sort((a, b) => a.valueOf() - b.valueOf());
+    const dates = Array.from(this.selectedDates).map((d) => (0, import_obsidian6.moment)(d, "YYYY-MM-DD")).sort((a, b) => a.valueOf() - b.valueOf());
     this.onSubmit(dates);
   }
 };
 
 // src/main.ts
-var VocalogPlugin = class extends import_obsidian6.Plugin {
+var VocalogPlugin = class extends import_obsidian7.Plugin {
   async onload() {
     await this.loadSettings();
     this.addSettingTab(new VocalogSettingTab(this.app, this));
-    this.addRibbonIcon("microphone", "Vocalog: Generate Audio Notes", async (evt) => {
+    this.addRibbonIcon("microphone", "Vocalog: generate audio notes", async (evt) => {
       await this.generateAudioNotes();
     });
     this.addCommand({
       id: "generate-audio-notes",
-      name: "Generate Audio Notes",
-      callback: () => this.generateAudioNotes()
+      name: "Generate audio notes",
+      callback: () => void this.generateAudioNotes()
     });
     this.addCommand({
       id: "generate-from-selected",
-      name: "Generate from Selected Audio Files",
+      name: "Generate from selected audio files",
       checkCallback: (checking) => {
         const files = this.getSelectedAudioFiles();
         if (files.length > 0) {
           if (!checking) {
-            this.generateFromFiles(files);
+            void this.generateFromFiles(files);
           }
           return true;
         }
@@ -454,10 +474,10 @@ var VocalogPlugin = class extends import_obsidian6.Plugin {
     });
     this.addCommand({
       id: "generate-by-date-range",
-      name: "Generate Audio Notes by Date Range",
+      name: "Generate audio notes by date range",
       callback: () => {
-        new CalendarModal(this.app, async (dates) => {
-          await this.generateBySelectedDates(dates);
+        new CalendarModal(this.app, (dates) => {
+          void this.generateBySelectedDates(dates);
         }).open();
       }
     });
@@ -465,7 +485,7 @@ var VocalogPlugin = class extends import_obsidian6.Plugin {
       this.app.workspace.on("file-menu", (menu, file) => {
         if (this.isAudioFile(file)) {
           menu.addItem((item) => {
-            item.setTitle("\u{1F3A4} Generate Audio Note").setIcon("microphone").onClick(async () => {
+            item.setTitle("Generate audio note").setIcon("microphone").onClick(async () => {
               await this.generateFromFiles([file]);
             });
           });
@@ -474,27 +494,28 @@ var VocalogPlugin = class extends import_obsidian6.Plugin {
     );
   }
   async generateAudioNotes() {
-    const notice = new import_obsidian6.Notice("Starting Vocalog processing...", 0);
+    const notice = new import_obsidian7.Notice("Starting vocalog processing...", 0);
     try {
       const files = getTodayAudioFiles(this.app.vault, this.settings.audioFolder);
       if (files.length === 0) {
         notice.hide();
-        new import_obsidian6.Notice("No audio recordings found for today.");
+        new import_obsidian7.Notice("No audio recordings found for today.");
         return;
       }
       await this.processAudioFiles(files, notice);
     } catch (error) {
       notice.hide();
       console.error("Vocalog processing failed:", error);
-      new import_obsidian6.Notice(`\u274C Error: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      new import_obsidian7.Notice(`Error: ${errorMessage}`);
     }
   }
   async generateFromFiles(files, targetDate) {
-    const notice = new import_obsidian6.Notice("Processing selected audio files...", 0);
+    const notice = new import_obsidian7.Notice("Processing selected audio files...", 0);
     try {
       if (files.length === 0) {
         notice.hide();
-        new import_obsidian6.Notice("No audio files selected.");
+        new import_obsidian7.Notice("No audio files selected.");
         return;
       }
       files.sort((a, b) => a.stat.ctime - b.stat.ctime);
@@ -502,15 +523,16 @@ var VocalogPlugin = class extends import_obsidian6.Plugin {
     } catch (error) {
       notice.hide();
       console.error("Audio processing failed:", error);
-      new import_obsidian6.Notice(`\u274C Error: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      new import_obsidian7.Notice(`\u274C Error: ${errorMessage}`);
     }
   }
   async generateBySelectedDates(dates) {
-    const notice = new import_obsidian6.Notice("Processing audio files for selected dates...", 0);
+    const notice = new import_obsidian7.Notice("Processing audio files for selected dates...", 0);
     try {
       if (dates.length === 0) {
         notice.hide();
-        new import_obsidian6.Notice("No dates selected.");
+        new import_obsidian7.Notice("No dates selected.");
         return;
       }
       let totalProcessed = 0;
@@ -524,24 +546,25 @@ var VocalogPlugin = class extends import_obsidian6.Plugin {
       }
       notice.hide();
       if (totalProcessed === 0) {
-        new import_obsidian6.Notice(`No audio recordings found for selected dates.`);
+        new import_obsidian7.Notice(`No audio recordings found for selected dates.`);
       } else {
-        new import_obsidian6.Notice(`\u2705 Processed ${totalProcessed} audio files from ${dates.length} day(s)!`);
+        new import_obsidian7.Notice(`\u2705 Processed ${totalProcessed} audio files from ${dates.length} day(s)!`);
       }
     } catch (error) {
       notice.hide();
       console.error("Selected dates processing failed:", error);
-      new import_obsidian6.Notice(`\u274C Error: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      new import_obsidian7.Notice(`\u274C Error: ${errorMessage}`);
     }
   }
   async generateByDateRange(startDate, endDate) {
-    const notice = new import_obsidian6.Notice("Processing audio files by date range...", 0);
+    const notice = new import_obsidian7.Notice("Processing audio files by date range...", 0);
     try {
       if (startDate.isSame(endDate, "day")) {
         const files = getAudioFilesByDate(this.app.vault, this.settings.audioFolder, startDate);
         if (files.length === 0) {
           notice.hide();
-          new import_obsidian6.Notice(`No audio recordings found for ${startDate.format("YYYY-MM-DD")}.`);
+          new import_obsidian7.Notice(`No audio recordings found for ${startDate.format("YYYY-MM-DD")}.`);
           return;
         }
         await this.processAudioFiles(files, notice, startDate);
@@ -559,16 +582,17 @@ var VocalogPlugin = class extends import_obsidian6.Plugin {
         }
         notice.hide();
         if (totalProcessed === 0) {
-          new import_obsidian6.Notice(`No audio recordings found in date range.`);
+          new import_obsidian7.Notice(`No audio recordings found in date range.`);
         } else {
-          new import_obsidian6.Notice(`\u2705 Processed ${totalProcessed} audio files from ${daysDiff} days!`);
+          new import_obsidian7.Notice(`\u2705 Processed ${totalProcessed} audio files from ${daysDiff} days!`);
         }
         return;
       }
     } catch (error) {
       notice.hide();
       console.error("Date range processing failed:", error);
-      new import_obsidian6.Notice(`\u274C Error: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      new import_obsidian7.Notice(`\u274C Error: ${errorMessage}`);
     }
   }
   async processAudioFiles(files, notice, targetDate) {
@@ -595,7 +619,7 @@ var VocalogPlugin = class extends import_obsidian6.Plugin {
     notice.setMessage("Writing to daily note...");
     await writeToJournal(finalContent, this.settings, this.app.vault, targetDate);
     notice.hide();
-    new import_obsidian6.Notice("\u2705 Vocalog generated successfully!");
+    new import_obsidian7.Notice("Vocalog generated successfully!");
   }
   generateAudioLinks(files) {
     if (files.length === 0)
@@ -604,7 +628,7 @@ var VocalogPlugin = class extends import_obsidian6.Plugin {
       const linkText = `![[${file.path}]]`;
       return `${linkText}`;
     });
-    return `### Audio Sources
+    return `### Audio sources
 
 ${links.join("\n\n")}`;
   }
@@ -617,12 +641,12 @@ ${links.join("\n\n")}`;
     const fileExplorers = this.app.workspace.getLeavesOfType("file-explorer");
     if (fileExplorers.length > 0) {
       const fileExplorer = fileExplorers[0].view;
-      if (fileExplorer && fileExplorer.tree) {
+      if (fileExplorer == null ? void 0 : fileExplorer.tree) {
         const selectedItems = fileExplorer.tree.selectedDoms;
         if (selectedItems) {
           for (const item of selectedItems) {
             const file = item.file;
-            if (file instanceof import_obsidian6.TFile && this.isAudioFile(file)) {
+            if (file && this.isAudioFile(file)) {
               files.push(file);
             }
           }
