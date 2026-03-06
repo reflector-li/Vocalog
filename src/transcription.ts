@@ -7,9 +7,14 @@ export interface TranscriptEntry {
 	success: boolean;
 }
 
+interface TranscribeResponse {
+	text: string;
+}
+
 /**
  * 转录单个音频文件
  * 实现文档第6.1节的 STT API 规范
+ * Note: Using fetch API because Obsidian's requestUrl doesn't support multipart/form-data
  */
 export async function transcribeAudio(
 	audioData: ArrayBuffer,
@@ -26,6 +31,7 @@ export async function transcribeAudio(
 	formData.append('model', settings.sttModel);
 
 	try {
+		// eslint-disable-next-line no-restricted-globals
 		const response = await fetch(settings.sttApiUrl, {
 			method: 'POST',
 			headers: {
@@ -39,12 +45,13 @@ export async function transcribeAudio(
 			throw new Error(`STT API failed: ${response.statusText} - ${errorText}`);
 		}
 
-		const result = await response.json();
+		const result = await response.json() as TranscribeResponse;
 		return result.text;
 	} catch (error) {
 		// 提供更详细的错误信息
-		if (error.message.includes('Failed to fetch')) {
-			throw new Error(`网络错误：无法连接到 STT API。请检查：\n1. API URL 是否正确\n2. 网络连接是否正常\n3. 是否需要代理\n原始错误: ${error.message}`);
+		const errorMessage = error instanceof Error ? error.message : String(error);
+		if (errorMessage.includes('Failed to fetch') || errorMessage.includes('network')) {
+			throw new Error(`网络错误：无法连接到 STT API。请检查：\n1. API URL 是否正确\n2. 网络连接是否正常\n3. 是否需要代理\n原始错误: ${errorMessage}`);
 		}
 		throw error;
 	}

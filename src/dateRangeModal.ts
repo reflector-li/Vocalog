@@ -18,14 +18,14 @@ export class DateRangeModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 
-		contentEl.createEl('h2', { text: 'Select Date Range' });
+		contentEl.createEl('h2', { text: 'Select date range' });
 
 		// 开始日期
 		new Setting(contentEl)
-			.setName('Start Date')
-			.setDesc('Select the start date (YYYY-MM-DD)')
+			.setName('Start date')
+			.setDesc('Select the start date')
 			.addText(text => text
-				.setPlaceholder('YYYY-MM-DD')
+				.setPlaceholder('Date')
 				.setValue(this.startDate)
 				.onChange(value => {
 					this.startDate = value;
@@ -33,17 +33,17 @@ export class DateRangeModal extends Modal {
 
 		// 结束日期
 		new Setting(contentEl)
-			.setName('End Date')
-			.setDesc('Select the end date (YYYY-MM-DD)')
+			.setName('End date')
+			.setDesc('Select the end date')
 			.addText(text => text
-				.setPlaceholder('YYYY-MM-DD')
+				.setPlaceholder('Date')
 				.setValue(this.endDate)
 				.onChange(value => {
 					this.endDate = value;
 				}));
 
 		// 快捷选项
-		contentEl.createEl('h3', { text: 'Quick Options' });
+		contentEl.createEl('h3', { text: 'Quick options' });
 
 		const buttonContainer = contentEl.createDiv({ cls: 'date-quick-options' });
 
@@ -68,7 +68,7 @@ export class DateRangeModal extends Modal {
 		};
 
 		// 最近7天
-		const last7DaysBtn = buttonContainer.createEl('button', { text: 'Last 7 Days' });
+		const last7DaysBtn = buttonContainer.createEl('button', { text: 'Last 7 days' });
 		last7DaysBtn.onclick = () => {
 			this.startDate = moment().subtract(6, 'days').format('YYYY-MM-DD');
 			this.endDate = moment().format('YYYY-MM-DD');
@@ -77,7 +77,7 @@ export class DateRangeModal extends Modal {
 		};
 
 		// 本周
-		const thisWeekBtn = buttonContainer.createEl('button', { text: 'This Week' });
+		const thisWeekBtn = buttonContainer.createEl('button', { text: 'This week' });
 		thisWeekBtn.onclick = () => {
 			this.startDate = moment().startOf('week').format('YYYY-MM-DD');
 			this.endDate = moment().endOf('week').format('YYYY-MM-DD');
@@ -86,7 +86,7 @@ export class DateRangeModal extends Modal {
 		};
 
 		// 上周
-		const lastWeekBtn = buttonContainer.createEl('button', { text: 'Last Week' });
+		const lastWeekBtn = buttonContainer.createEl('button', { text: 'Last week' });
 		lastWeekBtn.onclick = () => {
 			this.startDate = moment().subtract(1, 'week').startOf('week').format('YYYY-MM-DD');
 			this.endDate = moment().subtract(1, 'week').endOf('week').format('YYYY-MM-DD');
@@ -95,7 +95,7 @@ export class DateRangeModal extends Modal {
 		};
 
 		// 本月
-		const thisMonthBtn = buttonContainer.createEl('button', { text: 'This Month' });
+		const thisMonthBtn = buttonContainer.createEl('button', { text: 'This month' });
 		thisMonthBtn.onclick = () => {
 			this.startDate = moment().startOf('month').format('YYYY-MM-DD');
 			this.endDate = moment().endOf('month').format('YYYY-MM-DD');
@@ -107,7 +107,7 @@ export class DateRangeModal extends Modal {
 		const submitContainer = contentEl.createDiv({ cls: 'modal-button-container' });
 
 		const submitBtn = submitContainer.createEl('button', {
-			text: 'Generate',
+			text: 'Generate notes',
 			cls: 'mod-cta'
 		});
 		submitBtn.onclick = () => {

@@ -1,6 +1,6 @@
 import { Plugin, Notice, TFile, Menu, moment } from 'obsidian';
 import { VocalogSettingTab, DEFAULT_SETTINGS, VocalogSettings } from './settings';
-import { getTodayAudioFiles, getAudioFilesByDateRange, getAudioFilesByDate } from './fileRetrieval';
+import { getTodayAudioFiles, getAudioFilesByDate } from './fileRetrieval';
 import { transcribeBatch } from './transcription';
 import { summarizeTranscripts } from './summarization';
 import { writeToJournal } from './journalWriter';
@@ -17,26 +17,26 @@ export default class VocalogPlugin extends Plugin {
 		this.addSettingTab(new VocalogSettingTab(this.app, this));
 
 		// 添加 Ribbon 图标按钮（左侧边栏）
-		this.addRibbonIcon('microphone', 'Vocalog: Generate Audio Notes', async (evt: MouseEvent) => {
+		this.addRibbonIcon('microphone', 'Vocalog: generate audio notes', async (evt: MouseEvent) => {
 			await this.generateAudioNotes();
 		});
 
 		// 注册命令：处理今日音频
 		this.addCommand({
 			id: 'generate-audio-notes',
-			name: 'Generate Audio Notes',
-			callback: () => this.generateAudioNotes()
+			name: 'Generate audio notes',
+			callback: () => void this.generateAudioNotes()
 		});
 
 		// 注册命令：处理选中的音频文件
 		this.addCommand({
 			id: 'generate-from-selected',
-			name: 'Generate from Selected Audio Files',
+			name: 'Generate from selected audio files',
 			checkCallback: (checking: boolean) => {
 				const files = this.getSelectedAudioFiles();
 				if (files.length > 0) {
 					if (!checking) {
-						this.generateFromFiles(files);
+						void this.generateFromFiles(files);
 					}
 					return true;
 				}
@@ -47,10 +47,10 @@ export default class VocalogPlugin extends Plugin {
 		// 注册命令：按日期范围处理（使用日历组件）
 		this.addCommand({
 			id: 'generate-by-date-range',
-			name: 'Generate Audio Notes by Date Range',
+			name: 'Generate audio notes by date range',
 			callback: () => {
-				new CalendarModal(this.app, async (dates) => {
-					await this.generateBySelectedDates(dates);
+				new CalendarModal(this.app, (dates) => {
+					void this.generateBySelectedDates(dates);
 				}).open();
 			}
 		});
@@ -61,7 +61,7 @@ export default class VocalogPlugin extends Plugin {
 				if (this.isAudioFile(file)) {
 					menu.addItem((item) => {
 						item
-							.setTitle('🎤 Generate Audio Note')
+							.setTitle('Generate audio note')
 							.setIcon('microphone')
 							.onClick(async () => {
 								await this.generateFromFiles([file]);
@@ -73,7 +73,7 @@ export default class VocalogPlugin extends Plugin {
 	}
 
 	async generateAudioNotes() {
-		const notice = new Notice('Starting Vocalog processing...', 0);
+		const notice = new Notice('Starting vocalog processing...', 0);
 
 		try {
 			// 步骤1: 文件检索（文档第4节）
@@ -91,7 +91,8 @@ export default class VocalogPlugin extends Plugin {
 		} catch (error) {
 			notice.hide();
 			console.error('Vocalog processing failed:', error);
-			new Notice(`❌ Error: ${error.message}`);
+			const errorMessage = error instanceof Error ? error.message : String(error);
+			new Notice(`Error: ${errorMessage}`);
 		}
 	}
 
@@ -113,7 +114,8 @@ export default class VocalogPlugin extends Plugin {
 		} catch (error) {
 			notice.hide();
 			console.error('Audio processing failed:', error);
-			new Notice(`❌ Error: ${error.message}`);
+			const errorMessage = error instanceof Error ? error.message : String(error);
+			new Notice(`❌ Error: ${errorMessage}`);
 		}
 	}
 
@@ -149,7 +151,8 @@ export default class VocalogPlugin extends Plugin {
 		} catch (error) {
 			notice.hide();
 			console.error('Selected dates processing failed:', error);
-			new Notice(`❌ Error: ${error.message}`);
+			const errorMessage = error instanceof Error ? error.message : String(error);
+			new Notice(`❌ Error: ${errorMessage}`);
 		}
 	}
 
@@ -196,7 +199,8 @@ export default class VocalogPlugin extends Plugin {
 		} catch (error) {
 			notice.hide();
 			console.error('Date range processing failed:', error);
-			new Notice(`❌ Error: ${error.message}`);
+			const errorMessage = error instanceof Error ? error.message : String(error);
+			new Notice(`❌ Error: ${errorMessage}`);
 		}
 	}
 
@@ -237,7 +241,7 @@ export default class VocalogPlugin extends Plugin {
 		await writeToJournal(finalContent, this.settings, this.app.vault, targetDate);
 
 		notice.hide();
-		new Notice('✅ Vocalog generated successfully!');
+		new Notice('Vocalog generated successfully!');
 	}
 
 	generateAudioLinks(files: TFile[]): string {
@@ -249,7 +253,7 @@ export default class VocalogPlugin extends Plugin {
 			return `${linkText}`;
 		});
 
-		return `### Audio Sources\n\n${links.join('\n\n')}`;
+		return `### Audio sources\n\n${links.join('\n\n')}`;
 	}
 
 	isAudioFile(file: TFile): boolean {
@@ -264,14 +268,18 @@ export default class VocalogPlugin extends Plugin {
 		// 尝试从文件浏览器获取选中的文件
 		const fileExplorers = this.app.workspace.getLeavesOfType('file-explorer');
 		if (fileExplorers.length > 0) {
-			const fileExplorer = fileExplorers[0].view as any;
-			if (fileExplorer && fileExplorer.tree) {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			const fileExplorer: any = fileExplorers[0].view;
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+			if (fileExplorer?.tree) {
 				// 获取所有选中的文件
+				// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
 				const selectedItems = fileExplorer.tree.selectedDoms;
 				if (selectedItems) {
 					for (const item of selectedItems) {
-						const file = item.file;
-						if (file instanceof TFile && this.isAudioFile(file)) {
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+						const file = item.file as TFile | undefined;
+						if (file && this.isAudioFile(file)) {
 							files.push(file);
 						}
 					}
@@ -283,6 +291,7 @@ export default class VocalogPlugin extends Plugin {
 	}
 
 	async loadSettings() {
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
 	}
 

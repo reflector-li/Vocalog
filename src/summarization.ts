@@ -1,5 +1,27 @@
+import { requestUrl } from 'obsidian';
 import type { VocalogSettings } from './settings';
 import type { TranscriptEntry } from './transcription';
+
+interface ChatMessage {
+	role: 'system' | 'user';
+	content: string;
+}
+
+interface ChatRequestBody {
+	model: string;
+	messages: ChatMessage[];
+	temperature: number;
+}
+
+interface ChatChoice {
+	message: {
+		content: string;
+	};
+}
+
+interface ChatResponse {
+	choices: ChatChoice[];
+}
 
 /**
  * 使用 LLM 总结转录文本
@@ -15,7 +37,7 @@ export async function summarizeTranscripts(
 		.join('\n\n');
 
 	// 构建 API 请求
-	const requestBody = {
+	const requestBody: ChatRequestBody = {
 		model: settings.llmModel,
 		messages: [
 			{ role: 'system', content: settings.systemPrompt },
@@ -25,7 +47,8 @@ export async function summarizeTranscripts(
 	};
 
 	try {
-		const response = await fetch(settings.llmApiUrl, {
+		const response = await requestUrl({
+			url: settings.llmApiUrl,
 			method: 'POST',
 			headers: {
 				'Authorization': `Bearer ${settings.llmApiKey}`,
@@ -34,17 +57,13 @@ export async function summarizeTranscripts(
 			body: JSON.stringify(requestBody)
 		});
 
-		if (!response.ok) {
-			const errorText = await response.text().catch(() => 'Unknown error');
-			throw new Error(`LLM API failed: ${response.statusText} - ${errorText}`);
-		}
-
-		const result = await response.json();
-		return result.choices[0].message.content;
+		const result = response.json as ChatResponse;
+		return result.choices[0]?.message?.content ?? '';
 	} catch (error) {
 		// 提供更详细的错误信息
-		if (error.message.includes('Failed to fetch')) {
-			throw new Error(`网络错误：无法连接到 LLM API。请检查：\n1. API URL 是否正确\n2. API Key 是否有效\n3. 网络连接是否正常\n原始错误: ${error.message}`);
+		const errorMessage = error instanceof Error ? error.message : String(error);
+		if (errorMessage.includes('Failed to fetch') || errorMessage.includes('network')) {
+			throw new Error(`网络错误：无法连接到 LLM API。请检查：\n1. API URL 是否正确\n2. API Key 是否有效\n3. 网络连接是否正常\n原始错误: ${errorMessage}`);
 		}
 		throw error;
 	}
