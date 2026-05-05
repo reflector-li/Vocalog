@@ -6,6 +6,58 @@ import { summarizeTranscripts } from './summarization';
 import { writeToJournal } from './journalWriter';
 import { CalendarModal } from './calendarModal';
 
+const SETTINGS_KEYS: (keyof VocalogSettings)[] = [
+	'audioFolder',
+	'outputFolder',
+	'dailyNoteFormat',
+	'sttApiUrl',
+	'sttApiKey',
+	'sttModel',
+	'llmApiUrl',
+	'llmApiKey',
+	'llmModel',
+	'systemPrompt',
+];
+
+function isRecord(value: unknown): value is Record<PropertyKey, unknown> {
+	return typeof value === 'object' && value !== null;
+}
+
+function isIterable(value: unknown): value is Iterable<unknown> {
+	return isRecord(value) && typeof value[Symbol.iterator] === 'function';
+}
+
+function getFileExplorerSelectedItems(view: unknown): Iterable<unknown> {
+	if (!isRecord(view)) {
+		return [];
+	}
+
+	const tree = view.tree;
+	if (!isRecord(tree)) {
+		return [];
+	}
+
+	const selectedDoms = tree.selectedDoms;
+	return isIterable(selectedDoms) ? selectedDoms : [];
+}
+
+function normalizeSettings(data: unknown): VocalogSettings {
+	const settings = { ...DEFAULT_SETTINGS };
+
+	if (!isRecord(data)) {
+		return settings;
+	}
+
+	for (const key of SETTINGS_KEYS) {
+		const value = data[key];
+		if (typeof value === 'string') {
+			settings[key] = value;
+		}
+	}
+
+	return settings;
+}
+
 export default class VocalogPlugin extends Plugin {
 	settings: VocalogSettings;
 
@@ -269,19 +321,12 @@ export default class VocalogPlugin extends Plugin {
 		// 访问 Obsidian 内部 API 获取文件浏览器选中的文件
 		const fileExplorers = this.app.workspace.getLeavesOfType('file-explorer');
 		if (fileExplorers.length > 0) {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment -- Internal Obsidian API for file explorer selection
-			const fileExplorer = fileExplorers[0].view as any;
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- Internal Obsidian API tree property
-			if (fileExplorer?.tree) {
-				// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment -- Internal Obsidian API selectedDoms property
-				const selectedItems = fileExplorer.tree.selectedDoms;
-				if (selectedItems) {
-					for (const item of selectedItems) {
-						// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access -- Internal Obsidian API file property
-						const file = item.file as TFile | undefined;
-						if (file && this.isAudioFile(file)) {
-							files.push(file);
-						}
+			const selectedItems = getFileExplorerSelectedItems(fileExplorers[0].view);
+			for (const item of selectedItems) {
+				if (isRecord(item)) {
+					const file = item.file;
+					if (file instanceof TFile && this.isAudioFile(file)) {
+						files.push(file);
 					}
 				}
 			}
@@ -291,8 +336,8 @@ export default class VocalogPlugin extends Plugin {
 	}
 
 	async loadSettings() {
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Object.assign returns mixed type for plugin settings
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		const loadedData: unknown = await this.loadData();
+		this.settings = normalizeSettings(loadedData);
 	}
 
 	async saveSettings() {

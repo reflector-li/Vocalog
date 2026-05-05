@@ -170,25 +170,66 @@ function getAudioFilesByDate(vault, audioFolder, date) {
 
 // src/transcription.ts
 var import_obsidian3 = require("obsidian");
+function encodeUtf8(text) {
+  return new TextEncoder().encode(text);
+}
+function concatUint8Arrays(parts) {
+  const totalLength = parts.reduce((length, part) => length + part.length, 0);
+  const result = new Uint8Array(totalLength);
+  let offset = 0;
+  for (const part of parts) {
+    result.set(part, offset);
+    offset += part.length;
+  }
+  return result;
+}
+function buildMultipartBody(audioData, fileName, model) {
+  const boundary = `----VocalogFormBoundary${Date.now().toString(16)}`;
+  const audioBytes = new Uint8Array(audioData);
+  const parts = [
+    encodeUtf8(
+      `--${boundary}\r
+Content-Disposition: form-data; name="file"; filename="${fileName}"\r
+Content-Type: application/octet-stream\r
+\r
+`
+    ),
+    audioBytes,
+    encodeUtf8(
+      `\r
+--${boundary}\r
+Content-Disposition: form-data; name="model"\r
+\r
+${model}\r
+--${boundary}--\r
+`
+    )
+  ];
+  const bytes = concatUint8Arrays(parts);
+  const body = new ArrayBuffer(bytes.byteLength);
+  new Uint8Array(body).set(bytes);
+  return {
+    body,
+    boundary
+  };
+}
 async function transcribeAudio(audioData, fileName, settings) {
-  const formData = new FormData();
-  const extension = fileName.split(".").pop() || "m4a";
-  const blob = new Blob([audioData], { type: `audio/${extension}` });
-  formData.append("file", blob, fileName);
-  formData.append("model", settings.sttModel);
+  const multipart = buildMultipartBody(audioData, fileName, settings.sttModel);
   try {
-    const response = await fetch(settings.sttApiUrl, {
+    const response = await (0, import_obsidian3.requestUrl)({
+      url: settings.sttApiUrl,
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${settings.sttApiKey}`
+        "Authorization": `Bearer ${settings.sttApiKey}`,
+        "Content-Type": `multipart/form-data; boundary=${multipart.boundary}`
       },
-      body: formData
+      body: multipart.body,
+      throw: false
     });
-    if (!response.ok) {
-      const errorText = await response.text().catch(() => "Unknown error");
-      throw new Error(`STT API failed: ${response.statusText} - ${errorText}`);
+    if (response.status < 200 || response.status >= 300) {
+      throw new Error(`STT API failed: ${response.status} - ${response.text || "Unknown error"}`);
     }
-    const result = await response.json();
+    const result = response.json;
     return result.text;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -446,6 +487,48 @@ var CalendarModal = class extends import_obsidian6.Modal {
 };
 
 // src/main.ts
+var SETTINGS_KEYS = [
+  "audioFolder",
+  "outputFolder",
+  "dailyNoteFormat",
+  "sttApiUrl",
+  "sttApiKey",
+  "sttModel",
+  "llmApiUrl",
+  "llmApiKey",
+  "llmModel",
+  "systemPrompt"
+];
+function isRecord(value) {
+  return typeof value === "object" && value !== null;
+}
+function isIterable(value) {
+  return isRecord(value) && typeof value[Symbol.iterator] === "function";
+}
+function getFileExplorerSelectedItems(view) {
+  if (!isRecord(view)) {
+    return [];
+  }
+  const tree = view.tree;
+  if (!isRecord(tree)) {
+    return [];
+  }
+  const selectedDoms = tree.selectedDoms;
+  return isIterable(selectedDoms) ? selectedDoms : [];
+}
+function normalizeSettings(data) {
+  const settings = { ...DEFAULT_SETTINGS };
+  if (!isRecord(data)) {
+    return settings;
+  }
+  for (const key of SETTINGS_KEYS) {
+    const value = data[key];
+    if (typeof value === "string") {
+      settings[key] = value;
+    }
+  }
+  return settings;
+}
 var VocalogPlugin = class extends import_obsidian7.Plugin {
   async onload() {
     await this.loadSettings();
@@ -640,15 +723,12 @@ ${links.join("\n\n")}`;
     const files = [];
     const fileExplorers = this.app.workspace.getLeavesOfType("file-explorer");
     if (fileExplorers.length > 0) {
-      const fileExplorer = fileExplorers[0].view;
-      if (fileExplorer == null ? void 0 : fileExplorer.tree) {
-        const selectedItems = fileExplorer.tree.selectedDoms;
-        if (selectedItems) {
-          for (const item of selectedItems) {
-            const file = item.file;
-            if (file && this.isAudioFile(file)) {
-              files.push(file);
-            }
+      const selectedItems = getFileExplorerSelectedItems(fileExplorers[0].view);
+      for (const item of selectedItems) {
+        if (isRecord(item)) {
+          const file = item.file;
+          if (file instanceof import_obsidian7.TFile && this.isAudioFile(file)) {
+            files.push(file);
           }
         }
       }
@@ -656,7 +736,8 @@ ${links.join("\n\n")}`;
     return files;
   }
   async loadSettings() {
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+    const loadedData = await this.loadData();
+    this.settings = normalizeSettings(loadedData);
   }
   async saveSettings() {
     await this.saveData(this.settings);

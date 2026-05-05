@@ -2,16 +2,21 @@
 import tsparser from "@typescript-eslint/parser";
 import { defineConfig } from "eslint/config";
 import obsidianmd from "eslint-plugin-obsidianmd";
-import tseslint from "typescript-eslint";
 import globals from "globals";
 
 export default defineConfig([
+  {
+    ignores: [
+      "main.js",
+      "node_modules/**",
+      "package-lock.json",
+    ],
+  },
   ...obsidianmd.configs.recommended,
   {
-    files: ["src/transcription.ts"],
-    rules: {
-      // Allow fetch for multipart file uploads (requestUrl doesn't support FormData)
-      "no-restricted-globals": "off",
+    files: ["*.mjs"],
+    languageOptions: {
+      globals: globals.node,
     },
   },
   {
@@ -27,4 +32,3 @@ export default defineConfig([
     },
   },
 ]);
-

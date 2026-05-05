@@ -1,4 +1,4 @@
-import { TFile, Vault, moment } from 'obsidian';
+import { TFile, Vault, moment, requestUrl } from 'obsidian';
 import type { VocalogSettings } from './settings';
 
 export interface TranscriptEntry {
@@ -11,40 +11,78 @@ interface TranscribeResponse {
 	text: string;
 }
 
+function encodeUtf8(text: string): Uint8Array {
+	return new TextEncoder().encode(text);
+}
+
+function concatUint8Arrays(parts: Uint8Array[]): Uint8Array {
+	const totalLength = parts.reduce((length, part) => length + part.length, 0);
+	const result = new Uint8Array(totalLength);
+	let offset = 0;
+
+	for (const part of parts) {
+		result.set(part, offset);
+		offset += part.length;
+	}
+
+	return result;
+}
+
+function buildMultipartBody(audioData: ArrayBuffer, fileName: string, model: string): { body: ArrayBuffer; boundary: string } {
+	const boundary = `----VocalogFormBoundary${Date.now().toString(16)}`;
+	const audioBytes = new Uint8Array(audioData);
+	const parts = [
+		encodeUtf8(
+			`--${boundary}\r\n` +
+			`Content-Disposition: form-data; name="file"; filename="${fileName}"\r\n` +
+			`Content-Type: application/octet-stream\r\n\r\n`
+		),
+		audioBytes,
+		encodeUtf8(
+			`\r\n--${boundary}\r\n` +
+			`Content-Disposition: form-data; name="model"\r\n\r\n` +
+			`${model}\r\n` +
+			`--${boundary}--\r\n`
+		),
+	];
+	const bytes = concatUint8Arrays(parts);
+	const body = new ArrayBuffer(bytes.byteLength);
+	new Uint8Array(body).set(bytes);
+
+	return {
+		body,
+		boundary,
+	};
+}
+
 /**
  * 转录单个音频文件
  * 实现文档第6.1节的 STT API 规范
- * Note: Using fetch API because Obsidian's requestUrl doesn't support multipart/form-data
  */
 export async function transcribeAudio(
 	audioData: ArrayBuffer,
 	fileName: string,
 	settings: VocalogSettings
 ): Promise<string> {
-	const formData = new FormData();
-
-	// 从文件名提取扩展名
-	const extension = fileName.split('.').pop() || 'm4a';
-	const blob = new Blob([audioData], { type: `audio/${extension}` });
-
-	formData.append('file', blob, fileName);
-	formData.append('model', settings.sttModel);
+	const multipart = buildMultipartBody(audioData, fileName, settings.sttModel);
 
 	try {
-		const response = await fetch(settings.sttApiUrl, {
+		const response = await requestUrl({
+			url: settings.sttApiUrl,
 			method: 'POST',
 			headers: {
-				'Authorization': `Bearer ${settings.sttApiKey}`
+				'Authorization': `Bearer ${settings.sttApiKey}`,
+				'Content-Type': `multipart/form-data; boundary=${multipart.boundary}`,
 			},
-			body: formData
+			body: multipart.body,
+			throw: false,
 		});
 
-		if (!response.ok) {
-			const errorText = await response.text().catch(() => 'Unknown error');
-			throw new Error(`STT API failed: ${response.statusText} - ${errorText}`);
+		if (response.status < 200 || response.status >= 300) {
+			throw new Error(`STT API failed: ${response.status} - ${response.text || 'Unknown error'}`);
 		}
 
-		const result = await response.json() as TranscribeResponse;
+		const result = response.json as TranscribeResponse;
 		return result.text;
 	} catch (error) {
 		// 提供更详细的错误信息
